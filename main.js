@@ -55,7 +55,7 @@ function init() {
     renderer.xr.enabled = true;
 
     // Set group position & add resize listener
-    group.position.set(300,200,800);
+    group.position.set(200,200,200);
     onWindowResize();
     window.addEventListener('resize', onWindowResize);
 
@@ -78,8 +78,8 @@ function update() {
         
         //group.position.z -= 1;
         if (renderer.xr.isPresenting) {
-            ocean.render();
-            ocean.update();
+            //ocean.render();
+            //ocean.update();
         }
         else {
             ocean.render();
