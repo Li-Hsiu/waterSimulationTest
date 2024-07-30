@@ -78,8 +78,8 @@ function update() {
         
         //group.position.z -= 1;
         if (renderer.xr.isPresenting) {
-            //ocean.render();
-            //ocean.update();
+            ocean.render();
+            ocean.update();
         }
         else {
             ocean.render();
