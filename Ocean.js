@@ -93,9 +93,6 @@ Ocean.prototype.init = function(renderer, camera, scene, options, cameraProp, fi
 	this.displacementMapFramebuffer = new THREE.WebGLRenderTarget(this.resolution, this.resolution, LinearRepeatParams);
 	this.normalMapFramebuffer = new THREE.WebGLRenderTarget(this.resolution, this.resolution, LinearRepeatParams);
 
-	this.renderer.setRenderTarget(null);
-	this.renderer.clear();
-
 	// Define shaders and constant uniforms
 	////////////////////////////////////////
 
