@@ -2,10 +2,20 @@ import * as THREE from 'three';
 import { VRButton } from 'three/addons/webxr/VRButton.js';
 import { Ocean } from './Ocean.js';
 
-var camera, scene, renderer, ocean, mainDirectionalLight, cubeMesh, group, options;
+var camera, scene, renderer, ocean, mainDirectionalLight, cubeMesh, group, options, isAnimating = false;
 
 function init() {
     
+    const buttonBackground = document.getElementById('button1');
+    buttonBackground.addEventListener('click', () => {
+      if (isAnimating) {
+        isAnimating = false;
+      }
+      else {
+        isAnimating = true;
+      }
+    });
+
     // Initialize Renderer
     renderer = new THREE.WebGLRenderer({ antialias: true });
     document.body.appendChild(renderer.domElement);
@@ -55,12 +65,12 @@ function init() {
     renderer.xr.enabled = true;
 
     // Set group position & add resize listener
-    group.position.set(200,200,200);
+    group.position.set(200,100,200);
     onWindowResize();
     window.addEventListener('resize', onWindowResize);
 
-    //ocean.render();
-    //ocean.update();
+    ocean.render();
+    ocean.update();
 }
 
 var initialized = false;
@@ -69,6 +79,7 @@ function update() {
         if (renderer.xr.isPresenting && initialized == false) {
             //ocean.init(renderer, camera, scene, options, renderer.xr.getCamera(camera).cameras[0], false)
             //ocean.init(renderer, camera, scene, options, camera, true)
+            
             initialized = true;
         }
 
@@ -77,18 +88,14 @@ function update() {
         lastTime = currentTime;
         
         //group.position.z -= 1;
-        if (renderer.xr.isPresenting) {
+        
+        if (isAnimating) {
             renderer.xr.enabled = false
             ocean.render();
             ocean.update();
             renderer.xr.enabled = true;
         }
-        else {
-            ocean.render();
-            ocean.update();
-            
-        }
-        
+
         renderer.setRenderTarget(null);
         renderer.render(scene, camera);
     }
