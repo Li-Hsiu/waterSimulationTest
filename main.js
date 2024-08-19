@@ -81,13 +81,13 @@ function onDocumentKeyDown(event) {
     } else if (keyCode == 83) { // S
         camera.rotateX(-0.05);
     } else if (keyCode == 65) { // A
-        camera.rotateZ(0.05);
+        camera.rotateY(0.05);
     } else if (keyCode == 68) { // D
-        camera.rotateZ(-0.05);
+        camera.rotateY(-0.05);
     } else if (keyCode == 81) { // Q
-        group.rotateY(0.05);
+        group.rotateZ(0.05);
     } else if (keyCode == 69) { // E
-        group.rotateY(-0.05);
+        group.rotateZ(-0.05);
     } else if (keyCode == 38) { // Up
         group.position.z -= 10;
     } else if (keyCode == 40) { // Down
