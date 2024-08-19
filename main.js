@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { VRButton } from 'three/addons/webxr/VRButton.js';
 import { Ocean } from './Ocean.js';
 
-var camera, scene, renderer, ocean, mainDirectionalLight, cubeMesh, group, options, isAnimating = false;
+var camera, scene, renderer, ocean, mainDirectionalLight, cubeMesh, group, options, isAnimating = true;
 
 function init() {
     
