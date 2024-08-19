@@ -71,11 +71,43 @@ function init() {
 
     ocean.render();
     ocean.update();
+    document.addEventListener("keydown", onDocumentKeyDown, false);
 }
+
+function onDocumentKeyDown(event) {
+    var keyCode = event.which;
+    if (keyCode == 87) { // W
+        camera.rotateX(0.05);
+    } else if (keyCode == 83) { // S
+        camera.rotateX(-0.05);
+    } else if (keyCode == 65) { // A
+        camera.rotateZ(0.05);
+    } else if (keyCode == 68) { // D
+        camera.rotateZ(-0.05);
+    } else if (keyCode == 81) { // Q
+        group.rotateY(0.05);
+    } else if (keyCode == 69) { // E
+        group.rotateY(-0.05);
+    } else if (keyCode == 38) { // Up
+        group.position.z -= 10;
+    } else if (keyCode == 40) { // Down
+        group.position.z += 10;
+    } else if (keyCode == 37) { // Left
+        group.position.x -= 10;
+    } else if (keyCode == 39) { // Right
+        group.position.x += 10;
+    } else if (keyCode == 32) { // Space
+        group.position.y += 10;
+    } else if (keyCode == 16) { // Shift
+        group.position.y -= 10;
+    }
+
+};
 
 var initialized = false;
 function update() {
     if (camera) {
+        
         if (renderer.xr.isPresenting && initialized == false) {
             //ocean.init(renderer, camera, scene, options, renderer.xr.getCamera(camera).cameras[0], false)
             //ocean.init(renderer, camera, scene, options, camera, true)
