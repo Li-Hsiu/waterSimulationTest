@@ -5,10 +5,10 @@ import * as THREE from 'three';
 
 THREE.ShaderChunk["screenplane_pars_vertex"] = [
 		
-		'const float infinite = 150000.0;',
-		'const float screenScale = 1.5;',
+		'const float infinite = 150000.0;', // horizon distance
+		'const float screenScale = 1.25;',
 		'const vec3 groundNormal = vec3( 0.0, 1.0, 0.0 );',
-		'const float groundHeight = 0.0;',
+		'const float groundHeight = 1.0;',
 		
 		'varying vec3 vCamPosition;',
 		
@@ -27,9 +27,9 @@ THREE.ShaderChunk["screenplane_pars_vertex"] = [
 		'{',
 			// Extract the 3x3 rotation matrix from the 4x4 view matrix
 		'	return mat3( ',
-		'		u_viewMatrix[0].xyz,',
-		'		u_viewMatrix[1].xyz,',
-		'		u_viewMatrix[2].xyz',
+		'		viewMatrix[0].xyz,',
+		'		viewMatrix[1].xyz,',
+		'		viewMatrix[2].xyz',
 		'	);',
 		'}',
 		
@@ -37,7 +37,7 @@ THREE.ShaderChunk["screenplane_pars_vertex"] = [
 		'{',
 			// Xc = R * Xw + t
 			// c = - R.t() * t <=> c = - t.t() * R
-		'	return - u_viewMatrix[3].xyz * rotation;',
+		'	return - viewMatrix[3].xyz * rotation;',
 		'}',
 
 		'vec2 getImagePlan()',
@@ -47,8 +47,8 @@ THREE.ShaderChunk["screenplane_pars_vertex"] = [
 			//     | 0   e/(h/w) 0   0 |
 			//     | 0   0       .   . |
 			//     | 0   0       -1  0 |
-		'	float focal = u_projectionMatrix[0].x;',
-		'	float aspect = u_projectionMatrix[1].y;',
+		'	float focal = projectionMatrix[0].x;',
+		'	float aspect = projectionMatrix[1].y;',
 			
 			// Fix coordinate aspect and scale
 		'	return vec2( ( uv.x - 0.5 ) * screenScale * aspect, ( uv.y - 0.5 ) * screenScale * focal );',
@@ -57,7 +57,7 @@ THREE.ShaderChunk["screenplane_pars_vertex"] = [
 		'vec3 getCamRay( in mat3 rotation, in vec2 screenUV )',
 		'{',
 			// Compute camera ray then rotate it in order to get it in world coordinate
-		'	return vec3( screenUV.x, screenUV.y, u_projectionMatrix[0].x ) * rotation;',
+		'	return vec3( screenUV.x, screenUV.y, projectionMatrix[0].x ) * rotation;',
 		'}',
 		
 		'vec3 computeProjectedPosition()',

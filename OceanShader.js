@@ -51,8 +51,6 @@ THREE.ShaderLib['ocean_subtransform'] = {
 		"u_input": { type: "t", value: null },
 		"u_transformSize": { type: "f", value: 512.0 },
 		"u_subtransformSize": { type: "f", value: 250.0 },
-		"u_projectionMatrix": { type: "m4", value: null },
-		"u_viewMatrix": { type: "m4", value: null },
 	},
 	varying: {
 		"vUV": { type: "v2" }
@@ -105,8 +103,6 @@ THREE.ShaderLib['ocean_initial_spectrum'] = {
 		"u_wind": { type: "v2", value: new THREE.Vector2(10.0, 10.0) },
 		"u_resolution": { type: "f", value: 512.0 },
 		"u_size": { type: "f", value: 250.0 },
-		"u_projectionMatrix": { type: "m4", value: null },
-		"u_viewMatrix": { type: "m4", value: null },
 	},
 	fragmentShader: [
 
@@ -133,13 +129,20 @@ THREE.ShaderLib['ocean_initial_spectrum'] = {
 
 		'void main (void) {',
 			'vec2 coordinates = gl_FragCoord.xy - 0.5;',
-			
+
 			'float n = (coordinates.x < u_resolution * 0.5) ? coordinates.x : coordinates.x - u_resolution;',
 			'float m = (coordinates.y < u_resolution * 0.5) ? coordinates.y : coordinates.y - u_resolution;',
-			
+
+			'float normalizedX = n / u_resolution;',
+			'normalizedX = clamp(normalizedX, 0.0, 1.0);',
+			'vec2 u_wind = vec2(mix(-2.0, 100.0, normalizedX), 10.0);',
+
 			'vec2 K = (2.0 * PI * vec2(n, m)) / u_size;',
 			'float k = length(K);',
-			
+
+			//'u_wind.x = mix(-10.0, 10.0, coordinates.x / 1632.0);',
+			//'u_wind.y = mix(-10.0, 10.0, coordinates.z / 1632.0);',
+
 			'float l_wind = length(u_wind);',
 
 			'float Omega = 0.84;',
@@ -187,8 +190,6 @@ THREE.ShaderLib['ocean_phase'] = {
 		"u_deltaTime": { type: "f", value: null },
 		"u_resolution": { type: "f", value: null },
 		"u_size": { type: "f", value: null },
-		"u_projectionMatrix": { type: "m4", value: null },
-		"u_viewMatrix": { type: "m4", value: null },
 	},
 	varying: {
 		"vUV": { type: "v2" }
@@ -231,8 +232,6 @@ THREE.ShaderLib['ocean_spectrum'] = {
 		"u_choppiness": { type: "f", value: null },
 		"u_phases": { type: "t", value: null },
 		"u_initialSpectrum": { type: "t", value: null },
-		"u_projectionMatrix": { type: "m4", value: null },
-		"u_viewMatrix": { type: "m4", value: null },
 	},
 	varying: {
 		"vUV": { type: "v2" }
@@ -244,7 +243,7 @@ THREE.ShaderLib['ocean_spectrum'] = {
 		'const float KM = 370.0;',
 
 		'varying vec2 vUV;',
-
+		
 		'uniform float u_size;',
 		'uniform float u_resolution;',
 		'uniform float u_choppiness;',
@@ -265,6 +264,7 @@ THREE.ShaderLib['ocean_spectrum'] = {
 
 		'void main (void) {',
 			'vec2 coordinates = gl_FragCoord.xy - 0.5;',
+
 			'float n = (coordinates.x < u_resolution * 0.5) ? coordinates.x : coordinates.x - u_resolution;',
 			'float m = (coordinates.y < u_resolution * 0.5) ? coordinates.y : coordinates.y - u_resolution;',
 			'vec2 waveVector = (2.0 * PI * vec2(n, m)) / u_size;',
@@ -277,7 +277,6 @@ THREE.ShaderLib['ocean_spectrum'] = {
 			'h0Star.y *= -1.0;',
 
 			'vec2 h = multiplyComplex(h0, phaseVector) + multiplyComplex(h0Star, vec2(phaseVector.x, -phaseVector.y));',
-
 			'vec2 hX = -multiplyByI(h * (waveVector.x / length(waveVector))) * u_choppiness;',
 			'vec2 hZ = -multiplyByI(h * (waveVector.y / length(waveVector))) * u_choppiness;',
 
@@ -297,8 +296,6 @@ THREE.ShaderLib['ocean_normals'] = {
 		"u_displacementMap": { type: "t", value: null },
 		"u_resolution": { type: "f", value: null },
 		"u_size": { type: "f", value: null },
-		"u_projectionMatrix": { type: "m4", value: null },
-		"u_viewMatrix": { type: "m4", value: null },
 	},
 	varying: {
 		"vUV": { type: "v2" }
@@ -332,10 +329,19 @@ THREE.ShaderLib['ocean_normals'] = {
 };
 
 THREE.UniformsLib[ "oceanfft" ] = {
-
-	"u_displacementMap": { type: "t", value: null },
+	"u_displacementMap0": { type: "t", value: null },
+	"u_displacementMap1": { type: "t", value: null },
+	"u_displacementMap2": { type: "t", value: null },
+	"u_displacementMap3": { type: "t", value: null },
+	"u_displacementMap4": { type: "t", value: null },
+	"u_displacementMap5": { type: "t", value: null },
 	"u_reflection": { type: "t", value: null },
-	"u_normalMap": { type: "t", value: null },
+	"u_normalMap0": { type: "t", value: null },
+	"u_normalMap1": { type: "t", value: null },
+	"u_normalMap2": { type: "t", value: null },
+	"u_normalMap3": { type: "t", value: null },
+	"u_normalMap4": { type: "t", value: null },
+	"u_normalMap5": { type: "t", value: null },
 	"u_geometrySize": { type: "f", value: null },
 	"u_size": { type: "f", value: null },
 	"u_mirrorMatrix": { type: "m4", value: null },
@@ -344,24 +350,68 @@ THREE.UniformsLib[ "oceanfft" ] = {
 	"u_oceanColor": { type: "v3", value: null },
 	"u_sunDirection": { type: "v3", value: null },
 	"u_exposure": { type: "f", value: null },
-	"u_projectionMatrix": { type: "m4", value: null },
-	"u_viewMatrix": { type: "m4", value: null },
-
+	"u_vertexOne": { type: "t", value: null },
+	"u_vertexTwo": { type: "t", value: null },
+	"u_vertexThree": { type: "t", value: null },
+	"u_triangleColor": { type: "t", value: null },
+	"u_numTriangles": { type: "i", value: null },
+	"u_numPoints": { type: "i", value: null },
+	"u_triangleToVertex": { type: "t", value: null },
+	"u_vertexColor": { type: "t", value: null },
 },
 
 THREE.ShaderChunk[ "oceanfft_pars_vertex" ] = [
-
-	'uniform sampler2D u_displacementMap;',
+	'uniform sampler2D u_displacementMap0;',
+	'uniform sampler2D u_displacementMap1;',
+	'uniform sampler2D u_displacementMap2;',
+	'uniform sampler2D u_displacementMap3;',
+	'uniform sampler2D u_displacementMap4;',
+	'uniform sampler2D u_displacementMap5;',
 	'uniform float u_geometrySize;',
 	'uniform float u_size;',
 		
 ].join('\n');
 
 THREE.ShaderChunk[ "oceanfft_vertex" ] = [
-
-	'vec3 displacement = texture2D( u_displacementMap, worldPosition.xz * 0.002 ).rgb * ( u_geometrySize / u_size );', 
-	//'vec3 displacement = vec3(0) * ( u_geometrySize / u_size );',
-	'vec4 oceanfftWorldPosition = worldPosition + vec4( displacement, 0.0 );',
+	/*
+	'float x1 = 300.0;',
+	'float x2 = -300.0;',
+	'vec3 displacement;', 
+	'if (worldPosition.z > 500.0 || worldPosition.z < 0.0 || worldPosition.x < -500.0 || worldPosition.x > 500.0) {',
+		'displacement = vec3(0.0);',
+	'}',
+	'else if (worldPosition.x > x1) {',
+		'displacement = texture2D( u_displacementMap, worldPosition.xz * 0.002 ).rgb * ( u_geometrySize / u_size );',
+	'}',
+	'else if (worldPosition.x < x2) {',
+		'displacement = texture2D( u_displacementMap2, worldPosition.xz * 0.002 ).rgb * ( u_geometrySize / u_size );',
+	'}',
+	'else {',
+		'float t = (worldPosition.x - x2) / (x1 - x2);',
+		'vec3 displacement160 = texture2D(u_displacementMap2, worldPosition.xz * 0.002).rgb * (u_geomertySize / u_size);',
+		'vec3 displacement340 = texture2D(u_displacementMap, worldPosition.xz * 0.002).rgb * (u_geometrySize / u_size);',
+		'displacement = mix(displacement160, displacement340, t);',
+	'}',*/
+	'vec3 displacement = vec3(0.0, 0.0, 0.0);',
+	'for (int i=0; i<u_numTriangles; i++) {',
+		'vec2 v1 = texture(u_vertexOne, vec2(float(i)/float(u_numTriangles-1), 0.0)).xy;',
+		'vec2 v2 = texture(u_vertexTwo, vec2(float(i)/float(u_numTriangles-1), 0.0)).xy;',
+		'vec2 v3 = texture(u_vertexThree, vec2(float(i)/float(u_numTriangles-1), 0.0)).xy;',
+		'vec3 areas = isPointInTriangle(worldPosition.x, worldPosition.z, v1.x, v1.y, v2.x, v2.y, v3.x, v3.y);',
+		'if (areas != vec3(-1.0)) {',
+			'float totalArea = abs((v2.x - v1.x) * (v3.y - v1.y) - (v2.y - v1.y) * (v3.x - v1.x));',
+			'float alpha = areas.y / totalArea;',
+			'float beta = areas.z / totalArea;',
+			'float gamma = areas.x / totalArea;',
+			'vec3 vertexIdx = texture(u_triangleToVertex, vec2(float(i)/float(u_numTriangles-1), 0.0)).xyz;',
+			'vec3 displacementV1 = getDisplacementMap(int(vertexIdx.x), worldPosition.xyz);',
+			'vec3 displacementV2 = getDisplacementMap(int(vertexIdx.y), worldPosition.xyz);',
+			'vec3 displacementV3 = getDisplacementMap(int(vertexIdx.z), worldPosition.xyz);',
+			'displacement = alpha * displacementV1 + beta * displacementV2 + gamma * displacementV3;',
+			'break;',
+		'}',
+	'}',
+	'vec4 oceanfftWorldPosition = worldPosition + vec4( displacement.x, displacement.y, displacement.z, 0.0 );',
 	
 ].join('\n');
 
@@ -377,42 +427,102 @@ THREE.ShaderLib['ocean_main'] = {
 	uniforms: THREE.UniformsLib[ "oceanfft" ],
   
 	vertexShader: [
+		'#define MAX_MAPS 20',
 		'precision highp float;',
-		
+
 		'varying vec3 vWorldPosition;',
 		'varying vec4 vReflectCoordinates;',
 
 		'uniform mat4 u_mirrorMatrix;',
-
-		'uniform mat4 u_projectionMatrix;',
-		'uniform mat4 u_viewMatrix;',
-		'varying vec3 p;',
 		
+		'uniform sampler2D u_vertexOne;',
+		'uniform sampler2D u_vertexTwo;',
+		'uniform sampler2D u_vertexThree;',
+		'uniform sampler2D u_triangleToVertex;',
+		'uniform int u_numTriangles;',
+		'uniform int u_numPoints;',
+
 		THREE.ShaderChunk[ "screenplane_pars_vertex" ],
 		THREE.ShaderChunk[ "oceanfft_pars_vertex" ],
+
+		'vec3 isPointInTriangle(float px, float py, float ax, float ay, float bx, float by, float cx, float cy) {',
+			'float area1 = (px - ax) * (by - ay) - (py - ay) * (bx - ax);', // cross product without 0.5
+			'float area2 = (px - bx) * (cy - by) - (py - by) * (cx - bx);',
+			'float area3 = (px - cx) * (ay - cy) - (py - cy) * (ax - cx);',
+			'if ((area1 >= 0.0 && area2 >= 0.0 && area3 >= 0.0) || (area1 <= 0.0 && area2 <= 0.0 && area3 <= 0.0)) {',
+				'return vec3(area1, area2, area3);',
+			'}',
+			'return vec3(-1.0);',
+		'}',
+
+		'vec3 getDisplacementMap(int id, vec3 pos) {',
+			'switch(id) {',
+				'case 0:',
+					'return texture2D( u_displacementMap0, pos.xz * 0.002 ).rgb * ( u_geometrySize / u_size );',
+					'break;',
+				'case 1:',
+					'return texture2D( u_displacementMap1, pos.xz * 0.002 ).rgb * ( u_geometrySize / u_size );',
+					'break;',
+				'case 2:',
+					'return texture2D( u_displacementMap2, pos.xz * 0.002 ).rgb * ( u_geometrySize / u_size );',
+					'break;',
+				'case 3:',
+					'return texture2D( u_displacementMap3, pos.xz * 0.002 ).rgb * ( u_geometrySize / u_size );',
+					'break;',
+				'case 4:',
+					'return texture2D( u_displacementMap4, pos.xz * 0.002 ).rgb * ( u_geometrySize / u_size );',
+					'break;',
+				'case 5:',
+					'return texture2D( u_displacementMap5, pos.xz * 0.002 ).rgb * ( u_geometrySize / u_size );',
+					'break;',
+			'}',
+			
+		'}',
 
 		'void main (void) {',
 			THREE.ShaderChunk[ "screenplane_vertex" ],
 			'vec4 worldPosition = screenPlaneWorldPosition;',
-			
+
 			THREE.ShaderChunk[ "oceanfft_vertex" ],
-			
 			'vWorldPosition = oceanfftWorldPosition.xyz;',
 			'vReflectCoordinates = u_mirrorMatrix * oceanfftWorldPosition;',
-			'p = position;',
-			'gl_Position = u_projectionMatrix * u_viewMatrix * oceanfftWorldPosition;',
+			'gl_Position = projectionMatrix * viewMatrix * vec4(oceanfftWorldPosition.x, oceanfftWorldPosition.y, oceanfftWorldPosition.z, 1.0);',
 			
 		'}'
 	].join('\n'),
-  
+
+	vertexTriangleShader: [
+
+		'varying vec3 vWorldPosition;',
+		THREE.ShaderChunk[ "screenplane_pars_vertex" ],
+
+		'void main (void) {',
+			THREE.ShaderChunk[ "screenplane_vertex" ],
+			'vec4 worldPosition = screenPlaneWorldPosition;',
+
+			'vWorldPosition = worldPosition.xyz;',
+			'gl_Position = projectionMatrix * viewMatrix * vec4(worldPosition.x, worldPosition.y, worldPosition.z, 1.0);',
+			
+		'}'
+  	].join('\n'),
+
 	fragmentShader: [
 		'varying vec3 vWorldPosition;',
 		'varying vec4 vReflectCoordinates;',
-		'varying vec3 p;',
-
 
 		'uniform sampler2D u_reflection;',
-		'uniform sampler2D u_normalMap;',
+		'uniform sampler2D u_normalMap0;',
+		'uniform sampler2D u_normalMap1;',
+		'uniform sampler2D u_normalMap2;',
+		'uniform sampler2D u_normalMap3;',
+		'uniform sampler2D u_normalMap4;',
+		'uniform sampler2D u_normalMap5;',
+		'uniform sampler2D u_vertexOne;',
+		'uniform sampler2D u_vertexTwo;',
+		'uniform sampler2D u_vertexThree;',
+		'uniform sampler2D u_triangleToVertex;',
+		'uniform int u_numTriangles;',
+		'uniform int u_numPoints;',
 		'uniform vec3 u_oceanColor;',
 		'uniform vec3 u_sunDirection;',
 		'uniform float u_exposure;',
@@ -423,8 +533,86 @@ THREE.ShaderLib['ocean_main'] = {
 		
 		THREE.ShaderChunk["screenplane_pars_fragment"],
 
+		'vec3 isPointInTriangle(float px, float py, float ax, float ay, float bx, float by, float cx, float cy) {',
+			'float area1 = (px - ax) * (by - ay) - (py - ay) * (bx - ax);', // cross product without 0.5
+			'float area2 = (px - bx) * (cy - by) - (py - by) * (cx - bx);',
+			'float area3 = (px - cx) * (ay - cy) - (py - cy) * (ax - cx);',
+			'if ((area1 >= 0.0 && area2 >= 0.0 && area3 >= 0.0) || (area1 <= 0.0 && area2 <= 0.0 && area3 <= 0.0)) {',
+				'return vec3(area1, area2, area3);',
+			'}',
+			'return vec3(-1.0);',
+		'}',
+
+		'vec3 getNormalMap(int id, vec3 pos) {',
+			'switch(id) {',
+				'case 0:',
+					'return texture2D( u_normalMap0, pos.xz * 0.002 ).rgb;',
+					'break;',
+				'case 1:',
+					'return texture2D( u_normalMap1, pos.xz * 0.002 ).rgb;',
+					'break;',
+				'case 2:',
+					'return texture2D( u_normalMap2, pos.xz * 0.002 ).rgb;',
+					'break;',
+				'case 3:',
+					'return texture2D( u_normalMap3, pos.xz * 0.002 ).rgb;',
+					'break;',
+				'case 4:',
+					'return texture2D( u_normalMap4, pos.xz * 0.002 ).rgb;',
+					'break;',
+				'case 5:',
+					'return texture2D( u_normalMap5, pos.xz * 0.002 ).rgb;',
+					'break;',
+			'}',
+		'}',
+
 		'void main (void) {',
-			'vec3 normal = texture2D( u_normalMap, vWorldPosition.xz * 0.002 ).rgb;',
+			/*'if (vWorldPosition.z > 500.0 || vWorldPosition.z < 0.0 || vWorldPosition.x < -500.0 || vWorldPosition.x > 500.0) {',
+				'gl_FragColor = vec4( 0.5294, 0.8078, 0.9216,  1.0 );',
+				'return;',
+			'}',
+			'float x1 = 300.0;',
+			'float x2 = -300.0;',
+			'vec3 normal;',
+			'if (vWorldPosition.x > x1) {',
+				'normal = texture2D( u_normalMap, vWorldPosition.xz * 0.002 ).rgb;',
+			'}',
+			'else if (vWorldPosition.x < x2) {',
+				'normal = texture2D( u_normalMap2, vWorldPosition.xz * 0.002 ).rgb;',
+			'}',
+			'else {',
+				'float t = (vWorldPosition.x - x2) / (x1 - x2);',
+				'vec3 normal160 = texture2D(u_normalMap2, vWorldPosition.xz * 0.002).rgb;',
+				'vec3 normal340 = texture2D(u_normalMap, vWorldPosition.xz * 0.002).rgb;',
+				'normal = mix(normal160, normal340, t);',
+			'}',*/
+
+			'vec3 normal = vec3(0.0);',
+			'bool isInTriangle = false;',
+			'for (int i=0; i<u_numTriangles; i++) {',
+				'vec2 v1 = texture(u_vertexOne, vec2(float(i)/float(u_numTriangles-1), 0.0)).xy;',
+				'vec2 v2 = texture(u_vertexTwo, vec2(float(i)/float(u_numTriangles-1), 0.0)).xy;',
+				'vec2 v3 = texture(u_vertexThree, vec2(float(i)/float(u_numTriangles-1), 0.0)).xy;',
+				'vec3 areas = isPointInTriangle(vWorldPosition.x, vWorldPosition.z, v1.x, v1.y, v2.x, v2.y, v3.x, v3.y);',
+				'if (areas != vec3(-1.0)) {',
+					'isInTriangle = true;',
+					'float totalArea = abs((v2.x - v1.x) * (v3.y - v1.y) - (v2.y - v1.y) * (v3.x - v1.x));',
+					'float alpha = areas.y / totalArea;',
+					'float beta = areas.z / totalArea;',
+					'float gamma = areas.x / totalArea;',
+					'vec3 vertexIdx = texture(u_triangleToVertex, vec2(float(i)/float(u_numTriangles-1), 0.0)).xyz;',
+					'vec3 normalV1 = getNormalMap(int(vertexIdx.x), vWorldPosition.xyz);',
+					'vec3 normalV2 = getNormalMap(int(vertexIdx.y), vWorldPosition.xyz);',
+					'vec3 normalV3 = getNormalMap(int(vertexIdx.z), vWorldPosition.xyz);',
+					'normal = alpha * normalV1 + beta * normalV2 + gamma * normalV3;',
+					'break;',
+				'}',
+			'}',
+			'if (!isInTriangle) {',
+				'gl_FragColor = vec4(0.5294, 0.8078, 0.9216, 1.0);',
+				'return;',
+			'}',
+			'normal = normalize(normal);',
 			'vec3 view = normalize( vCamPosition - vWorldPosition );',
 			
 			// Compute the specular factor
@@ -453,10 +641,45 @@ THREE.ShaderLib['ocean_main'] = {
 			// Compute the final color
 			'vec3 color = ( skyFactor + specularFactor + waterColor ) * reflectionColor + waterColor * 0.5 ;',
 			'color = hdr( color, u_exposure );',
-			
-			//'gl_FragColor = vec4( p, 1.0 );',
-			//'gl_FragColor = vec4( vWorldPosition, 1.0 );',
-			'gl_FragColor = vec4( color, 1.0 );',
+			//'gl_FragColor = vec4( 0.0, 0.0, 0.75,  1.0 );',
+			'gl_FragColor = vec4( color,  1.0 );',
+		'}'
+	].join('\n'),
+
+	triangulationShader: [
+		'varying vec3 vWorldPosition;',
+
+		'uniform sampler2D u_vertexOne;',
+		'uniform sampler2D u_vertexTwo;',
+		'uniform sampler2D u_vertexThree;',
+		'uniform sampler2D u_triangleColor;',
+		'uniform sampler2D u_triangleToVertex;',
+		'uniform sampler2D u_vertexColor;',
+		'uniform int u_numTriangles;',
+		'uniform int u_numPoints;',
+
+		'void main (void) {',
+			'vec3 color = vec3(0.5294, 0.8078, 0.9216);',
+			'for (int i=0; i<u_numTriangles; i++) {',
+				'vec2 v1 = texture(u_vertexOne, vec2(float(i)/float(u_numTriangles-1), 0.0)).xy;',
+				'vec2 v2 = texture(u_vertexTwo, vec2(float(i)/float(u_numTriangles-1), 0.0)).xy;',
+				'vec2 v3 = texture(u_vertexThree, vec2(float(i)/float(u_numTriangles-1), 0.0)).xy;',
+				'vec3 areas = isPointInTriangle(vWorldPosition.x, vWorldPosition.z, v1.x, v1.y, v2.x, v2.y, v3.x, v3.y);',
+				'if (areas != vec3(-1.0)) {',
+					'float totalArea = abs((v2.x - v1.x) * (v3.y - v1.y) - (v2.y - v1.y) * (v3.x - v1.x));',
+					'float alpha = areas.y / totalArea;',
+					'float beta = areas.z / totalArea;',
+					'float gamma = areas.x / totalArea;',
+					'vec3 vertexIdx = texture(u_triangleToVertex, vec2(float(i)/float(u_numTriangles-1), 0.0)).xyz;',
+					'vec3 colorV1 = texture(u_vertexColor, vec2(vertexIdx.x/float(u_numTriangles-1), 0.0)).rgb;',
+					'vec3 colorV2 = texture(u_vertexColor, vec2(vertexIdx.y/float(u_numTriangles-1), 0.0)).rgb;',
+					'vec3 colorV3 = texture(u_vertexColor, vec2(vertexIdx.z/float(u_numTriangles-1), 0.0)).rgb;',
+					'color = alpha * colorV1 + beta * colorV2 + gamma * colorV3;',
+					'color = texture(u_triangleColor, vec2(float(i)/float(u_numTriangles-1), 0.0)).rgb;',
+					'break;',
+				'}',
+			'}',
+			'gl_FragColor = vec4( color,  1.0 );',
 		'}'
 	].join('\n')
 };

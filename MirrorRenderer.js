@@ -129,7 +129,7 @@ MirrorRenderer.prototype.updateTextureMatrix = function () {
 
 	this.mirrorCamera.updateProjectionMatrix();
 	this.mirrorCamera.updateMatrixWorld();
-	this.mirrorCamera.matrixWorldInverse.getInverse(this.mirrorCamera.matrixWorld);
+	this.mirrorCamera.matrixWorldInverse.copy(this.mirrorCamera.matrixWorld).invert();
 
 	// Update the texture matrix
 	this.textureMatrix.set(0.5, 0.0, 0.0, 0.5,
@@ -183,7 +183,8 @@ MirrorRenderer.prototype.render = function (isTempTexture) {
 		
 		this.renderer.setRenderTarget(this.renderTexture);
 		this.renderer.clear();
-        this.renderer.render(this.scene, this.mirrorCamera, renderTexture, true);
+		this.renderer.setRenderTarget(renderTexture)
+        this.renderer.render(this.scene, this.mirrorCamera);
 	}
 
 };
