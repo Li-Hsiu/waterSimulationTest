@@ -94,20 +94,15 @@ const Ocean = function (renderer, camera, scene, points, delaunay, options) { //
 	}
 
 	// store points as data texture
-	var vertexOneArray = new window.Float32Array(this.numTriangles * 4);
-	var vertexTwoArray = new window.Float32Array(this.numTriangles * 4);
+	var vertexOneTwoArray = new window.Float32Array(this.numTriangles * 4);
 	var vertexThreeArray = new window.Float32Array(this.numTriangles * 4);
 	var triangleColorArray = new window.Float32Array(this.numTriangles * 4);
 	var triangleToVertexArray = new window.Float32Array(this.numTriangles * 4);
 	for (let i = 0; i < this.numTriangles; i++) {
-		vertexOneArray[i * 4] = this.points[this.delaunay.triangles[i*3]].getCoord()[0];
-		vertexOneArray[i * 4 + 1] = this.points[this.delaunay.triangles[i*3]].getCoord()[1];
-		vertexOneArray[i * 4 + 2] = 0.0;
-		vertexOneArray[i * 4 + 3] = 0.0;
-		vertexTwoArray[i * 4] = this.points[this.delaunay.triangles[i*3+1]].getCoord()[0];
-		vertexTwoArray[i * 4 + 1] = this.points[this.delaunay.triangles[i*3+1]].getCoord()[1];
-		vertexTwoArray[i * 4 + 2] = 0.0;
-		vertexTwoArray[i * 4 + 3] = 0.0;
+		vertexOneTwoArray[i * 4] = this.points[this.delaunay.triangles[i*3]].getCoord()[0];
+		vertexOneTwoArray[i * 4 + 1] = this.points[this.delaunay.triangles[i*3]].getCoord()[1];
+		vertexOneTwoArray[i * 4 + 2] = this.points[this.delaunay.triangles[i*3+1]].getCoord()[0];
+		vertexOneTwoArray[i * 4 + 3] = this.points[this.delaunay.triangles[i*3+1]].getCoord()[1];
 		vertexThreeArray[i * 4] = this.points[this.delaunay.triangles[i*3+2]].getCoord()[0];
 		vertexThreeArray[i * 4 + 1] = this.points[this.delaunay.triangles[i*3+2]].getCoord()[1];
 		vertexThreeArray[i * 4 + 2] = 0.0;
@@ -121,8 +116,7 @@ const Ocean = function (renderer, camera, scene, points, delaunay, options) { //
 		triangleToVertexArray[i * 4 + 2] = this.delaunay.triangles[i*3+2];
 		triangleToVertexArray[i * 4 + 3] = 0.0;
 	}
-	this.vertexOneTexture = new THREE.DataTexture(vertexOneArray, this.numTriangles, 1, THREE.RGBAFormat, THREE.FloatType);
-	this.vertexTwoTexture = new THREE.DataTexture(vertexTwoArray, this.numTriangles, 1, THREE.RGBAFormat, THREE.FloatType);
+	this.vertexOneTwoTexture = new THREE.DataTexture(vertexOneTwoArray, this.numTriangles, 1, THREE.RGBAFormat, THREE.FloatType);
 	this.vertexThreeTexture = new THREE.DataTexture(vertexThreeArray, this.numTriangles, 1, THREE.RGBAFormat, THREE.FloatType);
 	this.triangleColorTexture = new THREE.DataTexture(triangleColorArray, this.numTriangles, 1, THREE.RGBAFormat, THREE.FloatType);
 	this.triangleToVertexTexture = new THREE.DataTexture(triangleToVertexArray, this.numTriangles, 1, THREE.RGBAFormat, THREE.FloatType);
@@ -255,8 +249,7 @@ const Ocean = function (renderer, camera, scene, points, delaunay, options) { //
 	this.materialOcean.uniforms.u_skyColor = { type: "v3", value: this.skyColor };
 	this.materialOcean.uniforms.u_sunDirection = { type: "v3", value: this.sunDirection };
 	this.materialOcean.uniforms.u_exposure = { type: "f", value: this.exposure };
-	this.materialOcean.uniforms.u_vertexOne = { type: "t", value: this.vertexOneTexture };
-	this.materialOcean.uniforms.u_vertexTwo = { type: "t", value: this.vertexTwoTexture };
+	this.materialOcean.uniforms.u_vertexOneTwo = { type: "t", value: this.vertexOneTwoTexture };
 	this.materialOcean.uniforms.u_vertexThree = { type: "t", value: this.vertexThreeTexture };
 	this.materialOcean.uniforms.u_triangleColor = { type: "t", value: this.triangleColorTexture };
 	this.materialOcean.uniforms.u_triangleToVertex = { type: "t", value: this.triangleToVertexTexture };

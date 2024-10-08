@@ -4,7 +4,7 @@ import { Ocean } from './Ocean.js';
 import { Point } from './Point.js';
 import Delaunator from 'https://cdn.skypack.dev/delaunator@5.0.0';
 
-var camera, scene, renderer, ocean, mainDirectionalLight, cubeMesh, group, options, isAnimating = true, viewId = 0;
+var camera, scene, renderer, ocean, mainDirectionalLight, cubeMesh, group, options, isAnimating = true;
 var points = [];
 var pointCoords = [];
 var delaunay = null;
@@ -101,9 +101,9 @@ function onDocumentKeyDown(event) {
     } else if (keyCode == 83) { // S
         group.position.sub(group.getWorldDirection(new THREE.Vector3()).multiplyScalar(10));
     } else if (keyCode == 65) { // A
-        group.position.sub(right.multiplyScalar(10));
+        group.position.sub(new THREE.Vector3().crossVectors(group.getWorldDirection(new THREE.Vector3()), new THREE.Vector3(0, 1, 0)).normalize().multiplyScalar(10));
     } else if (keyCode == 68) { // D
-        group.position.add(right.multiplyScalar(10));
+        group.position.add(new THREE.Vector3().crossVectors(group.getWorldDirection(new THREE.Vector3()), new THREE.Vector3(0, 1, 0)).normalize().multiplyScalar(10));
     } else if (keyCode == 81) { // Q
         group.rotateZ(0.05);
     } else if (keyCode == 69) { // E
