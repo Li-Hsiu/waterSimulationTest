@@ -652,7 +652,7 @@ THREE.ShaderLib['ocean_main'] = {
 			
 			// Compute the specular factor
 			'vec3 reflection = normalize( reflect( -u_sunDirection, normal ) );',
-			'float specularFactor = pow( max( 0.0, dot( view, reflection ) ), 500.0 ) * 1.0;', // 20.0
+			'float specularFactor = pow( max( 0.0, dot( view, reflection ) ), 500.0 ) * 5.0;', // 20.0
 		
 			// Get reflection color
 			'vec3 distortion = 200.0 * normal * vec3( 1.0, 0.0, 0.1 );',	

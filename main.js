@@ -61,7 +61,7 @@ function init() {
     const loader = new GLTFLoader();
     loader.load('./testIsland/scene.gltf', (gltf) => {
         scene.add(gltf.scene);
-        gltf.scene.position.set(0, -25, -1000);
+        gltf.scene.position.set(0, -30, -1000);
         gltf.scene.scale.set(0.2, 0.2, 0.2);
     }, undefined, (error) => {
         console.error(error);
