@@ -17,6 +17,7 @@ const Ocean = function (renderer, camera, scene, points, delaunay, options) { //
 	this.numPoints = points.length;
 	this.delaunay = delaunay;
 	this.numTriangles = delaunay.triangles.length/3;
+	console.log(this.delaunay);
 	console.log(this.numPoints);
 	console.log(this.numTriangles);
 
@@ -27,7 +28,7 @@ const Ocean = function (renderer, camera, scene, points, delaunay, options) { //
 	this.renderer.clearColor( 0xffffff );
 
 	this.scene = new THREE.Scene();
-	this.scene.background = new THREE.Color('skyblue'); //skyblue
+	//this.scene.background = new THREE.Color(0x000000); //skyblue
 
 	// Create mirror rendering
 	this.mirror = new MirrorRenderer( renderer, this.camera, scene ) ;
@@ -42,7 +43,7 @@ const Ocean = function (renderer, camera, scene, points, delaunay, options) { //
 	};
 	options = options || {};
 	this.sunDirection = optionalParameter(options.SUN_DIRECTION, new THREE.Vector3(-1.0, 1.0, 1.0 ));
-	this.oceanColor = optionalParameter(options.OCEAN_COLOR, new THREE.Vector3(0.004, 0.016, 0.047));
+	this.oceanColor = optionalParameter(options.OCEAN_COLOR, new THREE.Vector3(0.0, 0.0, 0.0));
 	this.skyColor = optionalParameter(options.SKY_COLOR, new THREE.Vector3(3.2, 9.6, 12.8));
 	this.exposure = optionalParameter(options.EXPOSURE, 0.35);
 	this.geometryResolution = optionalParameter(options.GEOMETRY_RESOLUTION, 32);
@@ -88,7 +89,7 @@ const Ocean = function (renderer, camera, scene, points, delaunay, options) { //
 
 	this.displacementMapFramebufferList = [];
 	this.normalMapFramebufferList = [];
-	for (let i=0; i<this.numPoints; i++) {
+	for (let i=0; i<6; i++) {
 		this.displacementMapFramebufferList.push(new THREE.WebGLRenderTarget(this.resolution, this.resolution, LinearRepeatParams));
 		this.normalMapFramebufferList.push(new THREE.WebGLRenderTarget(this.resolution, this.resolution, LinearRepeatParams));
 	}
@@ -120,14 +121,14 @@ const Ocean = function (renderer, camera, scene, points, delaunay, options) { //
 	this.vertexThreeTexture = new THREE.DataTexture(vertexThreeArray, this.numTriangles, 1, THREE.RGBAFormat, THREE.FloatType);
 	this.triangleColorTexture = new THREE.DataTexture(triangleColorArray, this.numTriangles, 1, THREE.RGBAFormat, THREE.FloatType);
 	this.triangleToVertexTexture = new THREE.DataTexture(triangleToVertexArray, this.numTriangles, 1, THREE.RGBAFormat, THREE.FloatType);
-	var vertexColorArray = new window.Float32Array(this.numPoints * 4);
-	for (let i = 0; i < this.numPoints; i++) {
+	var vertexColorArray = new window.Float32Array(6 * 4);
+	for (let i = 0; i < 6; i++) {
 		vertexColorArray[i * 4] = Math.random();
 		vertexColorArray[i * 4 + 1] = Math.random();
 		vertexColorArray[i * 4 + 2] = Math.random();
 		vertexColorArray[i * 4 + 3] = 0.0;
 	}
-	this.vertexColorTexture = new THREE.DataTexture(vertexColorArray, this.numPoints, 1, THREE.RGBAFormat, THREE.FloatType);
+	this.vertexColorTexture = new THREE.DataTexture(vertexColorArray, 6, 1, THREE.RGBAFormat, THREE.FloatType);
 
 	// Define shaders and constant uniforms
 	////////////////////////////////////////
@@ -313,7 +314,7 @@ Ocean.prototype.render = function () {
 
 	this.scene.overrideMaterial = null;
 
-	for (let i=0; i<this.numPoints; i++) {
+	for (let i=0; i<6; i++) {
 		var point = this.points[i];
 
 		this.renderInitialSpectrum(point.getWindVec2()[0], point.getWindVec2()[1]);

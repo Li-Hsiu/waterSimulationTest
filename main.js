@@ -1,5 +1,7 @@
 import * as THREE from 'three';
 import { VRButton } from 'three/addons/webxr/VRButton.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 import { Ocean } from './Ocean.js';
 import { Point } from './Point.js';
 import Delaunator from 'https://cdn.skypack.dev/delaunator@5.0.0';
@@ -52,9 +54,48 @@ function init() {
     scene.add(ambientLight);
     
     // Create Cube
-    cubeMesh = new THREE.Mesh( new THREE.CylinderGeometry( 1000, 2000, 1000, 32 ), new THREE.MeshPhongMaterial({ color: 0x3f9b0b }) );
-    cubeMesh.position.y = -200;
-    scene.add( cubeMesh );
+    //cubeMesh = new THREE.Mesh( new THREE.CylinderGeometry( 1000, 2000, 1000, 32 ), new THREE.MeshPhongMaterial({ color: 0x3f9b0b }) );
+    //cubeMesh.position.y = -200;
+    //scene.add( cubeMesh );
+
+    const loader = new GLTFLoader();
+    loader.load('./testIsland/scene.gltf', (gltf) => {
+        scene.add(gltf.scene);
+        gltf.scene.position.set(0, -25, -1000);
+        gltf.scene.scale.set(0.2, 0.2, 0.2);
+    }, undefined, (error) => {
+        console.error(error);
+    });
+
+    /*const rgbeLoader = new RGBELoader();
+    rgbeLoader.load('./sky.hdr', (texture) => {
+        // Set the texture mapping
+        texture.mapping = THREE.EquirectangularRefractionMapping;
+    
+        // Adjust brightness
+        const brightnessFactor = 1.5; // Increase or decrease this value as needed
+        texture.encoding = THREE.LinearEncoding; // Ensure correct encoding for HDR textures
+        texture.needsUpdate = true; // Mark the texture for update
+    
+        // Create a new shader material for brightness adjustment
+        const material = new THREE.MeshBasicMaterial({ map: texture });
+    
+        // Apply the brightness adjustment
+        material.onBeforeCompile = (shader) => {
+            shader.uniforms.brightness = { value: brightnessFactor };
+            shader.vertexShader = shader.vertexShader.replace(
+                'void main() {',
+                'uniform float brightness;\nvoid main() {'
+            );
+            shader.fragmentShader = shader.fragmentShader.replace(
+                'gl_FragColor = vec4(color, 1.0);',
+                'gl_FragColor = vec4(color * brightness, 1.0);'
+            );
+        };
+    
+        // Set the scene background
+        scene.background = texture;
+    });*/
 
     // Create Ocean
     options = {
@@ -63,7 +104,7 @@ function init() {
         INITIAL_CHOPPINESS : 2.6,
         CLEAR_COLOR : [ 1.0, 1.0, 1.0, 0.0 ],
         SUN_DIRECTION : mainDirectionalLight.position.clone(),
-        OCEAN_COLOR: new THREE.Vector3( 0.35, 0.4, 0.45 ),
+        OCEAN_COLOR: new THREE.Vector3( 28/256, 163/256, 236/256 ),
         SKY_COLOR: new THREE.Vector3( 10.0, 13.0, 15.0 ),
         EXPOSURE : 0.15,
         GEOMETRY_RESOLUTION: 512,
@@ -76,7 +117,7 @@ function init() {
     renderer.xr.enabled = true;
 
     // Set group position & add resize listener
-    group.position.set(0,1500,-3000);
+    group.position.set(0,3500,-8000);
     onWindowResize();
     window.addEventListener('resize', onWindowResize);
 
@@ -97,13 +138,13 @@ function onDocumentKeyDown(event) {
     up.applyQuaternion(camera.quaternion);
     var keyCode = event.which;
     if (keyCode == 87) { // W
-        group.position.add(group.getWorldDirection(new THREE.Vector3()).multiplyScalar(10));
+        group.position.add(group.getWorldDirection(new THREE.Vector3()).multiplyScalar(100));
     } else if (keyCode == 83) { // S
-        group.position.sub(group.getWorldDirection(new THREE.Vector3()).multiplyScalar(10));
+        group.position.sub(group.getWorldDirection(new THREE.Vector3()).multiplyScalar(100));
     } else if (keyCode == 65) { // A
-        group.position.sub(new THREE.Vector3().crossVectors(group.getWorldDirection(new THREE.Vector3()), new THREE.Vector3(0, 1, 0)).normalize().multiplyScalar(10));
+        group.position.sub(new THREE.Vector3().crossVectors(group.getWorldDirection(new THREE.Vector3()), new THREE.Vector3(0, 1, 0)).normalize().multiplyScalar(100));
     } else if (keyCode == 68) { // D
-        group.position.add(new THREE.Vector3().crossVectors(group.getWorldDirection(new THREE.Vector3()), new THREE.Vector3(0, 1, 0)).normalize().multiplyScalar(10));
+        group.position.add(new THREE.Vector3().crossVectors(group.getWorldDirection(new THREE.Vector3()), new THREE.Vector3(0, 1, 0)).normalize().multiplyScalar(100));
     } else if (keyCode == 81) { // Q
         group.rotateZ(0.05);
     } else if (keyCode == 69) { // E
@@ -117,9 +158,9 @@ function onDocumentKeyDown(event) {
     } else if (keyCode == 39) { // Right
         group.rotateY(-0.05);
     } else if (keyCode == 32) { // Space
-        group.position.add(up.multiplyScalar(10));
+        group.position.add(up.multiplyScalar(100));
     } else if (keyCode == 16) { // Shift
-        group.position.sub(up.multiplyScalar(10));
+        group.position.sub(up.multiplyScalar(100));
     }
 };
 
@@ -157,6 +198,14 @@ fetch('./ParameterPoints.json')
 .then(response => response.json())
 .then(data => {
     points = data.points.map(point => new Point(point[0], point[1], point[2], point[3], point[4]))
+    const numCirclePoints = data.numBoundaryPoints;
+    const radius = data.boundaryRadius;
+    for (let i = 0; i < numCirclePoints; i++) {
+        const angle = (2 * Math.PI * i) / numCirclePoints; 
+        const x = radius * Math.cos(angle); 
+        const y = radius * Math.sin(angle); 
+        points.push(new Point(x, y, 0, 0, 0));
+    }
     pointCoords = points.map(point => point.getCoord()).flat();
     delaunay = new Delaunator(pointCoords);
     console.log(delaunay.triangles);
