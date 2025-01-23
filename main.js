@@ -11,6 +11,7 @@ var points = [];
 var pointCoords = [];
 var delaunay = null;
 var lastTime = new Date().getTime();
+var scale = 0.2;
 
 function init() {
     
@@ -25,7 +26,7 @@ function init() {
     });
 
     // Initialize Renderer
-    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer = new THREE.WebGLRenderer({  antialias:true,  precision: "highp" , }); // logarithmicDepthBuffer: true 
     renderer.setPixelRatio( window.devicePixelRatio );
 	renderer.setSize( window.innerWidth, window.innerHeight );
     document.body.appendChild(renderer.domElement);
@@ -35,7 +36,7 @@ function init() {
     scene.background = new THREE.Color('skyblue');
 
     // Initialize Camera
-    camera = new THREE.PerspectiveCamera(55.0, window.innerWidth / window.innerHeight, 0.5, 1000000);
+    camera = new THREE.PerspectiveCamera(55.0, window.innerWidth / window.innerHeight, 0.5, 50000);
     camera.position.set(0, 0, 0);
     camera.lookAt(0, -15, 25);
 
@@ -54,15 +55,15 @@ function init() {
     scene.add(ambientLight);
     
     // Create Cube
-    //cubeMesh = new THREE.Mesh( new THREE.CylinderGeometry( 1000, 2000, 1000, 32 ), new THREE.MeshPhongMaterial({ color: 0x3f9b0b }) );
-    //cubeMesh.position.y = -200;
-    //scene.add( cubeMesh );
+    cubeMesh = new THREE.Mesh( new THREE.BoxGeometry(1000 * scale, 1000 * scale, 1000 * scale), new THREE.MeshPhongMaterial({ color: 0x3f9b0b }) );
+    cubeMesh.position.x = 5000 * scale;
+    scene.add( cubeMesh );
 
     const loader = new GLTFLoader();
     loader.load('./testIsland/scene.gltf', (gltf) => {
         scene.add(gltf.scene);
-        gltf.scene.position.set(0, -30, -1000);
-        gltf.scene.scale.set(0.2, 0.2, 0.2);
+        gltf.scene.position.set(0, -50 * scale, -1000 * scale);
+        gltf.scene.scale.set(0.2 * scale, 0.2 * scale, 0.2 * scale);
     }, undefined, (error) => {
         console.error(error);
     });
@@ -99,7 +100,7 @@ function init() {
 
     // Create Ocean
     options = {
-        INITIAL_SIZE : 200.0,
+        INITIAL_SIZE : 1000.0,
         INITIAL_WIND : [ 10.0, 10.0 ],
         INITIAL_CHOPPINESS : 2.6,
         CLEAR_COLOR : [ 1.0, 1.0, 1.0, 0.0 ],
@@ -117,7 +118,7 @@ function init() {
     renderer.xr.enabled = true;
 
     // Set group position & add resize listener
-    group.position.set(0,3500,-8000);
+    group.position.set(0,6000 * scale,-10000 * scale);
     onWindowResize();
     window.addEventListener('resize', onWindowResize);
 
@@ -138,13 +139,13 @@ function onDocumentKeyDown(event) {
     up.applyQuaternion(camera.quaternion);
     var keyCode = event.which;
     if (keyCode == 87) { // W
-        group.position.add(group.getWorldDirection(new THREE.Vector3()).multiplyScalar(100));
+        group.position.add(group.getWorldDirection(new THREE.Vector3()).multiplyScalar(100 * scale));
     } else if (keyCode == 83) { // S
-        group.position.sub(group.getWorldDirection(new THREE.Vector3()).multiplyScalar(100));
+        group.position.sub(group.getWorldDirection(new THREE.Vector3()).multiplyScalar(100 * scale));
     } else if (keyCode == 65) { // A
-        group.position.sub(new THREE.Vector3().crossVectors(group.getWorldDirection(new THREE.Vector3()), new THREE.Vector3(0, 1, 0)).normalize().multiplyScalar(100));
+        group.position.sub(new THREE.Vector3().crossVectors(group.getWorldDirection(new THREE.Vector3()), new THREE.Vector3(0, 1, 0)).normalize().multiplyScalar(100 * scale));
     } else if (keyCode == 68) { // D
-        group.position.add(new THREE.Vector3().crossVectors(group.getWorldDirection(new THREE.Vector3()), new THREE.Vector3(0, 1, 0)).normalize().multiplyScalar(100));
+        group.position.add(new THREE.Vector3().crossVectors(group.getWorldDirection(new THREE.Vector3()), new THREE.Vector3(0, 1, 0)).normalize().multiplyScalar(100 * scale));
     } else if (keyCode == 81) { // Q
         group.rotateZ(0.05);
     } else if (keyCode == 69) { // E
@@ -158,9 +159,13 @@ function onDocumentKeyDown(event) {
     } else if (keyCode == 39) { // Right
         group.rotateY(-0.05);
     } else if (keyCode == 32) { // Space
-        group.position.add(up.multiplyScalar(100));
+        group.position.add(up.multiplyScalar(100 * scale));
     } else if (keyCode == 16) { // Shift
-        group.position.sub(up.multiplyScalar(100));
+        group.position.sub(up.multiplyScalar(100 * scale));
+    } else if (keyCode == 79) { // Shift
+        ocean.size*=10;
+    } else if (keyCode == 80) { // Shift
+        ocean.size/=10;
     }
 };
 
@@ -180,7 +185,11 @@ function update() {
         }
 
         renderer.setRenderTarget(null);
+
+
         renderer.render(scene, camera);
+
+        
     }
 }
 

@@ -287,7 +287,7 @@ Ocean.prototype.generateMesh = function () {
 
 	var geometry = new THREE.PlaneGeometry( 1, 1, this.geometryResolution, this.geometryResolution );
 	this.oceanMesh = new THREE.Mesh( geometry, this.materialOcean );
-	
+	//this.oceanMesh.scale.set(1, 1, 1);
 };
 
 Ocean.prototype.update = function () {

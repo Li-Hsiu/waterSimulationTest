@@ -357,6 +357,7 @@ THREE.UniformsLib[ "oceanfft" ] = {
 	"u_numPoints": { type: "i", value: null },
 	"u_triangleToVertex": { type: "t", value: null },
 	"u_vertexColor": { type: "t", value: null },
+	"u_cameraPosition": { type: "v3", value: null },
 },
 
 THREE.ShaderChunk[ "oceanfft_pars_vertex" ] = [
@@ -419,6 +420,12 @@ THREE.ShaderChunk[ "oceanfft_vertex" ] = [
 		'}',
 	'}',
 	'if (isInTriangle == false) displacement = getTotalAverageDisplacementMap(worldPosition.xyz);',
+
+	'float distToCamera = length( getCameraPos(getRotation()) - worldPosition.xyz );',
+	'float t = clamp(distToCamera/5000.0, 0.0, 1.0);',
+	'vec3 interpolatedDisplacement = mix(displacement, vec3(0.0, 0.0, 0.0), t);',
+
+	//'vec4 oceanfftWorldPosition = worldPosition + vec4( interpolatedDisplacement.x, interpolatedDisplacement.y, interpolatedDisplacement.z, 0.0 );',
 	'vec4 oceanfftWorldPosition = worldPosition + vec4( displacement.x, displacement.y, displacement.z, 0.0 );',
 	
 ].join('\n');
@@ -648,14 +655,19 @@ THREE.ShaderLib['ocean_main'] = {
 				'normal = getTotalAverageNormalMap(vWorldPosition.xyz);',
 			'}',
 			'normal = normalize(normal);',
+
+			'float distToCamera = length( vCamPosition - vWorldPosition );',
+			'float t = clamp(distToCamera/30000.0, 0.0, 1.0);',
+			'vec3 interpolatedNormal = mix(normal, vec3(0.0, 1.0, 0.0), t);',
+
 			'vec3 view = normalize( vCamPosition - vWorldPosition );',
 			
 			// Compute the specular factor
-			'vec3 reflection = normalize( reflect( -u_sunDirection, normal ) );',
+			'vec3 reflection = normalize( reflect( -u_sunDirection, interpolatedNormal ) );',
 			'float specularFactor = pow( max( 0.0, dot( view, reflection ) ), 500.0 ) * 5.0;', // 20.0
 		
 			// Get reflection color
-			'vec3 distortion = 200.0 * normal * vec3( 1.0, 0.0, 0.1 );',	
+			'vec3 distortion = 200.0 * interpolatedNormal * vec3( 1.0, 0.0, 0.1 );',	
 			'vec3 reflectionColor = texture2DProj( u_reflection, vReflectCoordinates.xyz + distortion ).xyz;',
 			
 			// Smooth the normal following the distance
@@ -663,11 +675,11 @@ THREE.ShaderLib['ocean_main'] = {
 			'distanceRatio *= distanceRatio;',
 			'distanceRatio = distanceRatio * 0.7 + 0.3;',
 			//'distanceRatio = 1.0;',
-			'normal = ( distanceRatio * normal + vec3( 0.0, 1.0 - distanceRatio, 0.0 ) ) * 0.5;',
-			'normal /= length( normal );',
+			'interpolatedNormal = ( distanceRatio * interpolatedNormal + vec3( 0.0, 1.0 - distanceRatio, 0.0 ) ) * 0.5;',
+			'interpolatedNormal /= length( interpolatedNormal );',
 			
 			// Compute the fresnel ratio
-			'float fresnel = pow( 1.0 - dot( normal, view ), 2.0 );',
+			'float fresnel = pow( 1.0 - dot( interpolatedNormal, view ), 2.0 );',
 			
 			// Compute the sky reflection and the water color
 			'float skyFactor = ( fresnel + 0.2 ) * 10.0;',
@@ -676,7 +688,7 @@ THREE.ShaderLib['ocean_main'] = {
 			// Compute the final color
 			'vec3 color = ( skyFactor + specularFactor + waterColor ) * reflectionColor + waterColor * 0.5 ;',
 			'color = hdr( color, u_exposure );',
-			//'gl_FragColor = vec4( 0.0, 0.0, 0.75,  1.0 );',
+			//'gl_FragColor = vec4( interpolatedNormal,  1.0 );',
 			'gl_FragColor = vec4( color,  1.0 );',
 		'}'
 	].join('\n'),
