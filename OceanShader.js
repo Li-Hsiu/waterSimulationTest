@@ -444,7 +444,8 @@ THREE.ShaderLib['ocean_main'] = {
 	vertexShader: [
 		'#define MAX_MAPS 20',
 		'precision highp float;',
-
+		
+		'varying vec2 vUV;',
 		'varying vec3 vWorldPosition;',
 		'varying vec4 vReflectCoordinates;',
 
@@ -512,6 +513,9 @@ THREE.ShaderLib['ocean_main'] = {
 			THREE.ShaderChunk[ "oceanfft_vertex" ],
 			'vWorldPosition = oceanfftWorldPosition.xyz;',
 			'vReflectCoordinates = u_mirrorMatrix * oceanfftWorldPosition;',
+
+			'vUV = position.xy * 0.5 + 0.5;',
+
 			'gl_Position = projectionMatrix * viewMatrix * vec4(oceanfftWorldPosition.x, oceanfftWorldPosition.y, oceanfftWorldPosition.z, 1.0);',
 			
 		'}'

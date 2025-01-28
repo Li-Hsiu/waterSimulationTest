@@ -11,7 +11,7 @@ var points = [];
 var pointCoords = [];
 var delaunay = null;
 var lastTime = new Date().getTime();
-var scale = 0.2;
+var scale = 0.35;
 
 function init() {
     
@@ -55,7 +55,7 @@ function init() {
     scene.add(ambientLight);
     
     // Create Cube
-    cubeMesh = new THREE.Mesh( new THREE.BoxGeometry(1000 * scale, 1000 * scale, 1000 * scale), new THREE.MeshPhongMaterial({ color: 0x3f9b0b }) );
+    cubeMesh = new THREE.Mesh( new THREE.BoxGeometry(1000 * scale, 500 * scale, 1000 * scale), new THREE.MeshPhongMaterial({ color: 0x3f9b0b }) );
     cubeMesh.position.x = 5000 * scale;
     scene.add( cubeMesh );
 
@@ -100,12 +100,12 @@ function init() {
 
     // Create Ocean
     options = {
-        INITIAL_SIZE : 1000.0,
+        INITIAL_SIZE : 300.0,
         INITIAL_WIND : [ 10.0, 10.0 ],
         INITIAL_CHOPPINESS : 2.6,
         CLEAR_COLOR : [ 1.0, 1.0, 1.0, 0.0 ],
         SUN_DIRECTION : mainDirectionalLight.position.clone(),
-        OCEAN_COLOR: new THREE.Vector3( 28/256, 163/256, 236/256 ),
+        OCEAN_COLOR: new THREE.Vector3( 28/256, 120/256, 236/256 ),
         SKY_COLOR: new THREE.Vector3( 10.0, 13.0, 15.0 ),
         EXPOSURE : 0.15,
         GEOMETRY_RESOLUTION: 512,
@@ -118,7 +118,8 @@ function init() {
     renderer.xr.enabled = true;
 
     // Set group position & add resize listener
-    group.position.set(0,6000 * scale,-10000 * scale);
+    //group.position.set(0,6000 * scale,-10000 * scale);
+    group.position.set(0, 600, -2000);
     onWindowResize();
     window.addEventListener('resize', onWindowResize);
 
@@ -172,7 +173,7 @@ function onDocumentKeyDown(event) {
 function update() {
     if (camera) {
         var currentTime = new Date().getTime();
-        ocean.deltaTime = (currentTime - lastTime) / 2000 || 0.0;
+        ocean.deltaTime = (currentTime - lastTime) / 5000 || 0.0;
         lastTime = currentTime;
         
         document.querySelector(".label1").innerText = "Coord: (" + group.position.x.toFixed(1) + ", " + group.position.y.toFixed(1) + ", " + group.position.z.toFixed(1) + ")";
