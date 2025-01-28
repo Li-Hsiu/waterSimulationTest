@@ -690,6 +690,8 @@ THREE.ShaderLib['ocean_main'] = {
 			'vec3 waterColor = ( 1.0 - fresnel ) * u_oceanColor;',
 			
 			// Compute the final color
+			'vec3 skyColor = vec3(135.0/256.0, 206.0/256.0, 235.0/256.0);',
+			'reflectionColor = mix(reflectionColor, skyColor, 0.35);',
 			'vec3 color = ( skyFactor + specularFactor + waterColor ) * reflectionColor + waterColor * 0.5 ;',
 			'color = hdr( color, u_exposure );',
 			//'gl_FragColor = vec4( interpolatedNormal,  1.0 );',

@@ -100,7 +100,7 @@ function init() {
 
     // Create Ocean
     options = {
-        INITIAL_SIZE : 300.0,
+        INITIAL_SIZE : 1000.0,
         INITIAL_WIND : [ 10.0, 10.0 ],
         INITIAL_CHOPPINESS : 2.6,
         CLEAR_COLOR : [ 1.0, 1.0, 1.0, 0.0 ],
