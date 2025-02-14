@@ -1,12 +1,13 @@
 import * as THREE from 'three';
 import { VRButton } from 'three/addons/webxr/VRButton.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { FirstPersonControls } from 'three/addons/controls/FirstPersonControls.js';
 import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 import { Ocean } from './Ocean.js';
 import { Point } from './Point.js';
 import Delaunator from 'https://cdn.skypack.dev/delaunator@5.0.0';
 
-var camera, scene, renderer, ocean, mainDirectionalLight, cubeMesh, group, options, isAnimating = true;
+var camera, scene, renderer, ocean, mainDirectionalLight, cubeMesh, group, controls, options, isAnimating = true;
 var points = [];
 var pointCoords = [];
 var delaunay = null;
@@ -37,14 +38,17 @@ function init() {
 
     // Initialize Camera
     camera = new THREE.PerspectiveCamera(55.0, window.innerWidth / window.innerHeight, 0.5, 50000);
-    camera.position.set(0, 0, 0);
+    camera.position.set(0, 500, 0);
     camera.lookAt(0, -15, 25);
+    scene.add(camera);
 
+    controls = new FirstPersonControls(camera);
+    controls.lookSpeed = 0.001;
     // Initialize Dolly
-    group = new THREE.Group();
-    group.position.set(0,0,0);
-    group.add(camera);
-    scene.add(group);
+    //group = new THREE.Group();
+    //group.position.set(0,0,0);
+    //group.add(camera);
+    //scene.add(group);
     
     // Initialize Main Directional Light
     mainDirectionalLight = new THREE.DirectionalLight(new THREE.Color( 1, 0.95, 0.9 ), 1.0);
@@ -68,36 +72,6 @@ function init() {
         console.error(error);
     });
 
-    /*const rgbeLoader = new RGBELoader();
-    rgbeLoader.load('./sky.hdr', (texture) => {
-        // Set the texture mapping
-        texture.mapping = THREE.EquirectangularRefractionMapping;
-    
-        // Adjust brightness
-        const brightnessFactor = 1.5; // Increase or decrease this value as needed
-        texture.encoding = THREE.LinearEncoding; // Ensure correct encoding for HDR textures
-        texture.needsUpdate = true; // Mark the texture for update
-    
-        // Create a new shader material for brightness adjustment
-        const material = new THREE.MeshBasicMaterial({ map: texture });
-    
-        // Apply the brightness adjustment
-        material.onBeforeCompile = (shader) => {
-            shader.uniforms.brightness = { value: brightnessFactor };
-            shader.vertexShader = shader.vertexShader.replace(
-                'void main() {',
-                'uniform float brightness;\nvoid main() {'
-            );
-            shader.fragmentShader = shader.fragmentShader.replace(
-                'gl_FragColor = vec4(color, 1.0);',
-                'gl_FragColor = vec4(color * brightness, 1.0);'
-            );
-        };
-    
-        // Set the scene background
-        scene.background = texture;
-    });*/
-
     // Create Ocean
     options = {
         INITIAL_SIZE : 1000.0,
@@ -119,7 +93,7 @@ function init() {
 
     // Set group position & add resize listener
     //group.position.set(0,6000 * scale,-10000 * scale);
-    group.position.set(0, 600, -2000);
+    //group.position.set(0, 600, -2000);
     onWindowResize();
     window.addEventListener('resize', onWindowResize);
 
@@ -138,7 +112,7 @@ function onDocumentKeyDown(event) {
 
     const up = new THREE.Vector3(0, 1, 0);
     up.applyQuaternion(camera.quaternion);
-    var keyCode = event.which;
+    /*var keyCode = event.which;
     if (keyCode == 87) { // W
         group.position.add(group.getWorldDirection(new THREE.Vector3()).multiplyScalar(100 * scale));
     } else if (keyCode == 83) { // S
@@ -167,16 +141,17 @@ function onDocumentKeyDown(event) {
         ocean.size*=10;
     } else if (keyCode == 80) { // Shift
         ocean.size/=10;
-    }
+    }*/
 };
 
 function update() {
     if (camera) {
         var currentTime = new Date().getTime();
         ocean.deltaTime = (currentTime - lastTime) / 5000 || 0.0;
+        controls.update((currentTime - lastTime) / 10);
         lastTime = currentTime;
         
-        document.querySelector(".label1").innerText = "Coord: (" + group.position.x.toFixed(1) + ", " + group.position.y.toFixed(1) + ", " + group.position.z.toFixed(1) + ")";
+        document.querySelector(".label1").innerText = "Coord: (" + camera.position.x.toFixed(1) + ", " + camera.position.y.toFixed(1) + ", " + camera.position.z.toFixed(1) + ")";
 
         if (isAnimating) {
             renderer.xr.enabled = false;
@@ -184,13 +159,10 @@ function update() {
             ocean.update();
             renderer.xr.enabled = true;
         }
-
+        
         renderer.setRenderTarget(null);
 
-
-        renderer.render(scene, camera);
-
-        
+        renderer.render(scene, camera);        
     }
 }
 
