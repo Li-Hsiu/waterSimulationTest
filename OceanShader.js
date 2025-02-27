@@ -133,15 +133,8 @@ THREE.ShaderLib['ocean_initial_spectrum'] = {
 			'float n = (coordinates.x < u_resolution * 0.5) ? coordinates.x : coordinates.x - u_resolution;',
 			'float m = (coordinates.y < u_resolution * 0.5) ? coordinates.y : coordinates.y - u_resolution;',
 
-			'float normalizedX = n / u_resolution;',
-			'normalizedX = clamp(normalizedX, 0.0, 1.0);',
-			'vec2 u_wind = vec2(mix(-2.0, 100.0, normalizedX), 10.0);',
-
 			'vec2 K = (2.0 * PI * vec2(n, m)) / u_size;',
 			'float k = length(K);',
-
-			//'u_wind.x = mix(-10.0, 10.0, coordinates.x / 1632.0);',
-			//'u_wind.y = mix(-10.0, 10.0, coordinates.z / 1632.0);',
 
 			'float l_wind = length(u_wind);',
 
@@ -264,7 +257,6 @@ THREE.ShaderLib['ocean_spectrum'] = {
 
 		'void main (void) {',
 			'vec2 coordinates = gl_FragCoord.xy - 0.5;',
-
 			'float n = (coordinates.x < u_resolution * 0.5) ? coordinates.x : coordinates.x - u_resolution;',
 			'float m = (coordinates.y < u_resolution * 0.5) ? coordinates.y : coordinates.y - u_resolution;',
 			'vec2 waveVector = (2.0 * PI * vec2(n, m)) / u_size;',
@@ -277,6 +269,7 @@ THREE.ShaderLib['ocean_spectrum'] = {
 			'h0Star.y *= -1.0;',
 
 			'vec2 h = multiplyComplex(h0, phaseVector) + multiplyComplex(h0Star, vec2(phaseVector.x, -phaseVector.y));',
+			
 			'vec2 hX = -multiplyByI(h * (waveVector.x / length(waveVector))) * u_choppiness;',
 			'vec2 hZ = -multiplyByI(h * (waveVector.y / length(waveVector))) * u_choppiness;',
 

@@ -2,12 +2,13 @@ import * as THREE from 'three';
 import { VRButton } from 'three/addons/webxr/VRButton.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { FirstPersonControls } from 'three/addons/controls/FirstPersonControls.js';
-import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 import { Ocean } from './Ocean.js';
+import { Ocean2 } from './Ocean2.js';
+import { OceanSurface } from './OceanSurface.js';
 import { Point } from './Point.js';
 import Delaunator from 'https://cdn.skypack.dev/delaunator@5.0.0';
 
-var camera, scene, renderer, ocean, mainDirectionalLight, cubeMesh, group, controls, options, isAnimating = true;
+var camera, scene, renderer, ocean, ocean2, oceanSurface, mainDirectionalLight, loadingManager, isLoaded = false, cubeMesh, modelStrings, controls, options, isAnimating = true;
 var points = [];
 var pointCoords = [];
 var delaunay = null;
@@ -32,49 +33,91 @@ function init() {
 	renderer.setSize( window.innerWidth, window.innerHeight );
     document.body.appendChild(renderer.domElement);
 
+    loadingManager = new THREE.LoadingManager();
+    loadingManager.onLoad = function () {
+        console.log("Finished Loading!")
+        isLoaded = true;
+    };
+    loadingManager.onProgress = function (url, itemsLoaded, itemsTotal) {
+        console.log( 'Loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.' );
+    };
+
     // Initialize Scene
     scene = new THREE.Scene();
     scene.background = new THREE.Color('skyblue');
 
+    let s = 2;
+    let y = -5;
+
     // Initialize Camera
     camera = new THREE.PerspectiveCamera(55.0, window.innerWidth / window.innerHeight, 0.5, 50000);
-    camera.position.set(0, 500, 0);
-    camera.lookAt(0, -15, 25);
+    camera.position.set(0, 100*s, 0);
+    camera.lookAt(0, 0, 0);
     scene.add(camera);
 
     controls = new FirstPersonControls(camera);
     controls.lookSpeed = 0.001;
-    // Initialize Dolly
-    //group = new THREE.Group();
-    //group.position.set(0,0,0);
-    //group.add(camera);
-    //scene.add(group);
-    
+    controls.movementSpeed = s;
+
     // Initialize Main Directional Light
     mainDirectionalLight = new THREE.DirectionalLight(new THREE.Color( 1, 0.95, 0.9 ), 1.0);
     mainDirectionalLight.position.set(2300, 5000, 1550);
     scene.add(mainDirectionalLight);
 
-    const ambientLight = new THREE.AmbientLight(0x444444);
+    const ambientLight = new THREE.AmbientLight(0xFFFFFF);
     scene.add(ambientLight);
     
     // Create Cube
-    cubeMesh = new THREE.Mesh( new THREE.BoxGeometry(1000 * scale, 500 * scale, 1000 * scale), new THREE.MeshPhongMaterial({ color: 0x3f9b0b }) );
-    cubeMesh.position.x = 5000 * scale;
-    scene.add( cubeMesh );
+    cubeMesh = new THREE.Mesh( new THREE.BoxGeometry(1, 1, 1), new THREE.MeshPhongMaterial({ color: 0x3f9b0b }) );
+    //  cubeMesh.position.x = 5000 * scale;
+    //scene.add( cubeMesh );
 
-    const loader = new GLTFLoader();
-    loader.load('./testIsland/scene.gltf', (gltf) => {
+    const loader = new GLTFLoader(loadingManager);
+    // loader.load('./testIsland/scene.gltf', (gltf) => {
+    //     //scene.add(gltf.scene);
+    //     gltf.scene.position.set(0, -50 * scale, -1000 * scale);
+    //     gltf.scene.scale.set(0.2 * scale, 0.2 * scale, 0.2 * scale);
+    // }, undefined, (error) => {
+    //     console.error(error);
+    // });
+    
+    modelStrings.forEach((modelPath) => {
+        loader.load(modelPath, (gltf) => {
+            const model = gltf.scene;
+            model.position.set(-822875*s, y, 816500*s);
+            model.scale.set(s, s, s);
+            model.traverse((child) => {
+                if (child.isMesh) {
+                    child.material.polygonOffset = true;
+                    child.material.polygonOffsetFactor = 10;
+                    child.material.polygonOffsetUnits = 10; 
+                }
+            });
+            scene.add(model);
+        }, undefined, (error) => {
+            console.error(error);
+        });
+    });
+    /*
+    loader.load('./10-SE-6A/TERRAIN(TB)/T22500162000106E10/T22500162000106E10.gltf', (gltf) => {
         scene.add(gltf.scene);
-        gltf.scene.position.set(0, -50 * scale, -1000 * scale);
-        gltf.scene.scale.set(0.2 * scale, 0.2 * scale, 0.2 * scale);
+        gltf.scene.position.set(-822875*s, y, 816500*s);
+        gltf.scene.scale.set(s, s, s);
     }, undefined, (error) => {
         console.error(error);
     });
 
+    loader.load('./10-SE-6C/TERRAIN(TB)/T22500156000106E10/T22500156000106E10.gltf', (gltf) => {
+        scene.add(gltf.scene);
+        gltf.scene.position.set(-822875*s, y, 816500*s);
+        gltf.scene.scale.set(s, s, s);
+    }, undefined, (error) => {
+        console.error(error);
+    });*/
+
     // Create Ocean
     options = {
-        INITIAL_SIZE : 1000.0,
+        INITIAL_SIZE : 5000.0,
         INITIAL_WIND : [ 10.0, 10.0 ],
         INITIAL_CHOPPINESS : 2.6,
         CLEAR_COLOR : [ 1.0, 1.0, 1.0, 0.0 ],
@@ -86,68 +129,26 @@ function init() {
         RESOLUTION : 512
     };
     ocean = new Ocean(renderer, camera, scene, points, delaunay, options);    
+    //oceanSurface = new OceanSurface(renderer, camera, scene, options); 
 
     // Initialize VR Button
     document.body.appendChild( VRButton.createButton( renderer ) );
     renderer.xr.enabled = true;
 
-    // Set group position & add resize listener
-    //group.position.set(0,6000 * scale,-10000 * scale);
-    //group.position.set(0, 600, -2000);
     onWindowResize();
     window.addEventListener('resize', onWindowResize);
 
+    //oceanSurface.render();
     ocean.render();
     ocean.update();
-    
-    document.addEventListener("keydown", onDocumentKeyDown, false);
+
 }
 
-function onDocumentKeyDown(event) {
-    const forward = new THREE.Vector3(0, 0, -1);
-    forward.applyQuaternion(camera.quaternion);
-
-    const right = new THREE.Vector3(1, 0, 0);
-    right.applyQuaternion(camera.quaternion);
-
-    const up = new THREE.Vector3(0, 1, 0);
-    up.applyQuaternion(camera.quaternion);
-    /*var keyCode = event.which;
-    if (keyCode == 87) { // W
-        group.position.add(group.getWorldDirection(new THREE.Vector3()).multiplyScalar(100 * scale));
-    } else if (keyCode == 83) { // S
-        group.position.sub(group.getWorldDirection(new THREE.Vector3()).multiplyScalar(100 * scale));
-    } else if (keyCode == 65) { // A
-        group.position.sub(new THREE.Vector3().crossVectors(group.getWorldDirection(new THREE.Vector3()), new THREE.Vector3(0, 1, 0)).normalize().multiplyScalar(100 * scale));
-    } else if (keyCode == 68) { // D
-        group.position.add(new THREE.Vector3().crossVectors(group.getWorldDirection(new THREE.Vector3()), new THREE.Vector3(0, 1, 0)).normalize().multiplyScalar(100 * scale));
-    } else if (keyCode == 81) { // Q
-        group.rotateZ(0.05);
-    } else if (keyCode == 69) { // E
-        group.rotateZ(-0.05);
-    } else if (keyCode == 38) { // Up
-        group.rotateX(-0.05);
-    } else if (keyCode == 40) { // Down 
-        group.rotateX(0.05);
-    } else if (keyCode == 37) { // Left
-        group.rotateY(0.05);
-    } else if (keyCode == 39) { // Right
-        group.rotateY(-0.05);
-    } else if (keyCode == 32) { // Space
-        group.position.add(up.multiplyScalar(100 * scale));
-    } else if (keyCode == 16) { // Shift
-        group.position.sub(up.multiplyScalar(100 * scale));
-    } else if (keyCode == 79) { // Shift
-        ocean.size*=10;
-    } else if (keyCode == 80) { // Shift
-        ocean.size/=10;
-    }*/
-};
-
 function update() {
-    if (camera) {
+    if (camera && isLoaded) {
         var currentTime = new Date().getTime();
-        ocean.deltaTime = (currentTime - lastTime) / 5000 || 0.0;
+        ocean.deltaTime = (currentTime - lastTime) / 1000 || 0.0;
+        //oceanSurface.timeChange((currentTime - lastTime) / 1000 || 0.0);
         controls.update((currentTime - lastTime) / 10);
         lastTime = currentTime;
         
@@ -155,6 +156,7 @@ function update() {
 
         if (isAnimating) {
             renderer.xr.enabled = false;
+            //oceanSurface.render();
             ocean.render();
             ocean.update();
             renderer.xr.enabled = true;
@@ -176,6 +178,13 @@ function onWindowResize() {
     renderer.setSize(window.innerWidth,window.innerHeight);
 }
 
+fetch('./modelStrings.json')
+.then(response => response.json())
+.then(data => {
+    modelStrings = data;
+    console.log(modelStrings)
+})
+
 fetch('./ParameterPoints.json')
 .then(response => response.json())
 .then(data => {
@@ -190,7 +199,7 @@ fetch('./ParameterPoints.json')
     }
     pointCoords = points.map(point => point.getCoord()).flat();
     delaunay = new Delaunator(pointCoords);
-    console.log(delaunay.triangles);
+    //console.log(delaunay.triangles);
     init();
     render();
 });

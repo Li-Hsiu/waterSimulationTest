@@ -17,9 +17,9 @@ const Ocean = function (renderer, camera, scene, points, delaunay, options) { //
 	this.numPoints = points.length;
 	this.delaunay = delaunay;
 	this.numTriangles = delaunay.triangles.length/3;
-	console.log(this.delaunay);
-	console.log(this.numPoints);
-	console.log(this.numTriangles);
+	// console.log(this.delaunay);
+	// console.log(this.numPoints);
+	// console.log(this.numTriangles);
 
 	// Assign required parameters as object properties
 	this.oceanCamera = new THREE.OrthographicCamera(); //camera.clone();
@@ -47,10 +47,9 @@ const Ocean = function (renderer, camera, scene, points, delaunay, options) { //
 	this.skyColor = optionalParameter(options.SKY_COLOR, new THREE.Vector3(3.2, 9.6, 12.8));
 	this.exposure = optionalParameter(options.EXPOSURE, 0.35);
 	this.geometryResolution = optionalParameter(options.GEOMETRY_RESOLUTION, 32);
+	this.geometrySize = optionalParameter(options.GEOMETRY_SIZE, 2000);
 	this.resolution = optionalParameter(options.RESOLUTION, 64);
 	this.floatSize = optionalParameter(options.SIZE_OF_FLOAT, 4);
-	this.windX = optionalParameterArray(options.INITIAL_WIND, 0, 10.0),
-	this.windY = optionalParameterArray(options.INITIAL_WIND, 1, 10.0),
 	this.size = optionalParameter(options.INITIAL_SIZE, 250.0),
 	this.choppiness = optionalParameter(options.INITIAL_CHOPPINESS, 1.5);
 
@@ -170,7 +169,6 @@ const Ocean = function (renderer, camera, scene, points, delaunay, options) { //
 		vertexShader: fullscreeenVertexShader.vertexShader,
 		fragmentShader:initialSpectrumShader.fragmentShader,
 	});
-	this.materialInitialSpectrum.uniforms.u_wind = { type: "v2", value: new THREE.Vector2() };
 	this.materialInitialSpectrum.uniforms.u_resolution = { type: "f", value: this.resolution };
 	this.materialInitialSpectrum.depthTest = false;
 
@@ -371,8 +369,9 @@ Ocean.prototype.renderWavePhase = function () {
 	if (this.initial) {
 		this.materialPhase.uniforms.u_phases.value = this.pingPhaseTexture;
 		this.initial = false;
-	}else {
-		this.materialPhase.uniforms.u_phases.value = this.pingPhase ? this.pingPhaseFramebuffer	: this.pongPhaseFramebuffer;
+	}
+	else {
+		this.materialPhase.uniforms.u_phases.value = this.pingPhase ? this.pingPhaseFramebuffer : this.pongPhaseFramebuffer;
 	}
 	this.materialPhase.uniforms.u_deltaTime.value = this.deltaTime;
 	this.materialPhase.uniforms.u_size.value = this.size;

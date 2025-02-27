@@ -1,0 +1,30 @@
+    /*var keyCode = event.which;
+    if (keyCode == 87) { // W
+        group.position.add(group.getWorldDirection(new THREE.Vector3()).multiplyScalar(100 * scale));
+    } else if (keyCode == 83) { // S
+        group.position.sub(group.getWorldDirection(new THREE.Vector3()).multiplyScalar(100 * scale));
+    } else if (keyCode == 65) { // A
+        group.position.sub(new THREE.Vector3().crossVectors(group.getWorldDirection(new THREE.Vector3()), new THREE.Vector3(0, 1, 0)).normalize().multiplyScalar(100 * scale));
+    } else if (keyCode == 68) { // D
+        group.position.add(new THREE.Vector3().crossVectors(group.getWorldDirection(new THREE.Vector3()), new THREE.Vector3(0, 1, 0)).normalize().multiplyScalar(100 * scale));
+    } else if (keyCode == 81) { // Q
+        group.rotateZ(0.05);
+    } else if (keyCode == 69) { // E
+        group.rotateZ(-0.05);
+    } else if (keyCode == 38) { // Up
+        group.rotateX(-0.05);
+    } else if (keyCode == 40) { // Down 
+        group.rotateX(0.05);
+    } else if (keyCode == 37) { // Left
+        group.rotateY(0.05);
+    } else if (keyCode == 39) { // Right
+        group.rotateY(-0.05);
+    } else if (keyCode == 32) { // Space
+        group.position.add(up.multiplyScalar(100 * scale));
+    } else if (keyCode == 16) { // Shift
+        group.position.sub(up.multiplyScalar(100 * scale));
+    } else if (keyCode == 79) { // Shift
+        ocean.size*=10;
+    } else if (keyCode == 80) { // Shift
+        ocean.size/=10;
+    }*/
